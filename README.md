@@ -53,3 +53,7 @@ MODDING_PLAN.md                     research notes: engine, radio classes, route
 - Ironwood Studios, for Pacific Drive and its custom radio support
 - The RE-UE4SS team
 - Made with help from Claude (Anthropic's AI assistant)
+
+## Support
+
+If you enjoy this project, you can support me on Ko-fi: [https://ko-fi.com/alexjustalex](https://ko-fi.com/alexjustalex)

@@ -16,11 +16,20 @@ local DEBUG = false
 local function log(s) print(TAG .. s .. "\n") end
 local function dbg(s) if DEBUG then log(s) end end
 
+-- ---------- clock ----------
+-- os.clock() is CPU time, not real time (under Proton it runs much faster than the wall clock),
+-- so keep our own real-time clock in 50 ms steps.
+local ticks = 0
+LoopAsync(50, function() ticks = ticks + 1; return false end)
+local function seconds() return ticks * 0.05 end
+
 -- ---------- commands ----------
-local lastSend = 0
+-- One button press fires several hooks, sometimes in two bursts up to ~0.7 s apart; send only once.
+local DEBOUNCE = 0.9
+local lastSend = -10
 local function send(cmd, why)
-  local now = os.clock()
-  if now - lastSend < 0.35 then dbg("ignored duplicate " .. cmd .. " (" .. why .. ")"); return end
+  local now = seconds()
+  if now - lastSend < DEBOUNCE then dbg("ignored duplicate " .. cmd .. " (" .. why .. ")"); return end
   lastSend = now
   local f = io.open(PIPE, "w") or io.open(LINUX_DIR .. "/commands.txt", "a")
   if not f then log("MediaBridge is not running"); return end
@@ -73,7 +82,7 @@ local function tryRegister()
           if not ourTrack() then return end
           if h[4] then
             -- fallback hook fires after the specific ones; only send if nothing was sent just now
-            if os.clock() - lastSend < 0.6 then return end
+            if seconds() - lastSend < DEBOUNCE then return end
           end
           send(h[3], h[2])
         end)

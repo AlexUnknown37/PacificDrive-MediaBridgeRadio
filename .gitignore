@@ -2,3 +2,4 @@ backups/
 discovery*.txt
 *.zip
 release/MediaBridgeRadio/
+.release.ps1

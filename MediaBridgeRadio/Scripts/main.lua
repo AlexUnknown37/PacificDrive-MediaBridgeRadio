@@ -18,10 +18,10 @@ local function dbg(s) if DEBUG then log(s) end end
 
 -- ---------- clock ----------
 -- os.clock() is CPU time, not real time (under Proton it runs much faster than the wall clock),
--- so keep our own real-time clock in 50 ms steps.
-local ticks = 0
-LoopAsync(50, function() ticks = ticks + 1; return false end)
-local function seconds() return ticks * 0.05 end
+-- so keep our own real-time clock. The main loop at the bottom advances it every 250 ms.
+-- (Only one LoopAsync: a second one made UE4SS hang when reloading mods with Ctrl+R.)
+local clock = 0
+local function seconds() return clock end
 
 -- ---------- commands ----------
 -- One button press fires several hooks, sometimes in two bursts up to ~0.7 s apart; send only once.
@@ -124,6 +124,8 @@ local function displayText()
   return current.title
 end
 
+local wroteTexts = {}
+
 local function applyDisplay()
   local track = ourTrack()
   if not track then return end
@@ -133,16 +135,20 @@ local function applyDisplay()
   local text = displayText()
   local okT, title = pcall(function() return track.Title:ToString() end)
   if okT and title ~= text then
+    wroteTexts[title] = true -- only this mod changes our station's title, so the old one is ours too
     pcall(function() track.Title = FText(text) end)
     pcall(function() track.Artist = FText("") end)
   end
-  -- the radio widget, if it's on screen and still showing the old station name
+  -- The radio widget only re-reads the Title when the station (re)loads, so when the song changes by
+  -- itself (or in the music app) update the screen too: if it shows the station name or a song text
+  -- this mod wrote earlier. Other stations' text is left alone.
+  wroteTexts[text] = true
   for _, w in ipairs(FindAllOf("UMG_HighlightRadioWidget_C") or {}) do
     if w:IsValid() then
       local tb = w.CurrentTrackText
       if tb and tb:IsValid() then
         local ok, shown = pcall(function() return tb:GetText():ToString() end)
-        if ok and shown ~= text and shown:find("^MediaBridge") then
+        if ok and shown ~= text and (shown:find("^MediaBridge") or wroteTexts[shown]) then
           pcall(function() tb:SetText(FText(text)) end)
         end
       end
@@ -154,6 +160,7 @@ end
 local tick = 0
 LoopAsync(250, function()
   tick = tick + 1
+  clock = clock + 0.25
   ExecuteInGameThread(function()
     local ok, err = pcall(function()
       if tick % 8 == 1 then tryRegister() end

@@ -3,7 +3,7 @@
 ## Basic fields
 
 - **Mod name:** MediaBridge Radio - Your Music on the Car Radio
-- **Version:** 1.1.0
+- **Version:** 1.1.1
 - **Category:** Audio (or Miscellaneous if Audio isn't listed)
 - **Author:** AlexUnknown37
 - **Language:** English
@@ -75,9 +75,9 @@ It uses the game's built-in custom radio and the free MediaBridge tool. The mod 
 ## Files tab
 
 - **File name:** MediaBridge Radio
-- **File version:** 1.1.0
+- **File version:** 1.1.1
 - **File category:** Main file
-- **Upload:** `MediaBridgeRadio-1.1.0.zip`
+- **Upload:** `MediaBridgeRadio-1.1.1.zip`
 - **File description:** The mod folder, the ready-made radio playlist and a readme with install steps.
 
 ## Permissions and credits
@@ -99,6 +99,8 @@ Nexus needs at least one image. Good ones:
 A 20–30 second video of a skip with the name changing would help most.
 
 ## Changelog
+
+**1.1.1**: The radio now updates the song name when the song changes in your music app (not only when you skip with the radio). Fixed UE4SS hanging on Ctrl+R mod reload.
 
 **1.1.0**: Steam Deck / Linux support (with the Linux version of MediaBridge).
 

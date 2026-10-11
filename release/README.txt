@@ -1,4 +1,4 @@
-MediaBridge Radio for Pacific Drive  -  version 1.1.0
+MediaBridge Radio for Pacific Drive  -  version 1.1.1
 ====================================================
 
 Play your own music (Spotify, browser, etc.) on the car radio.

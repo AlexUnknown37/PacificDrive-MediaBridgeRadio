@@ -7,7 +7,7 @@
 local TAG = "[MediaBridgeRadio] "
 local PIPE = [[\\.\pipe\MediaBridge]]
 local NOWPLAYING = (os.getenv("LOCALAPPDATA") or "") .. "/MediaBridge/nowplaying.txt"
-local DEBUG = true
+local DEBUG = false
 
 local function log(s) print(TAG .. s .. "\n") end
 local function dbg(s) if DEBUG then log(s) end end

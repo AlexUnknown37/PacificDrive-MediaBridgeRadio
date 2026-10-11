@@ -1,2 +1,4 @@
 backups/
-*.txt
+discovery*.txt
+*.zip
+release/MediaBridgeRadio/

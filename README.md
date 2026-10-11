@@ -1,5 +1,7 @@
 # MediaBridge Radio for Pacific Drive
 
+[Watch in Action!](https://youtu.be/P02ywl0pOp0)
+
 Play your own music (Spotify, browser, any music app) on the Pacific Drive car radio, with the game's own 3D sound.
 
 - **Skip with the radio:** channel up/down plays the next or previous song in your music app (keybinds and the on-screen radio buttons)

@@ -114,19 +114,21 @@ local function applyDisplay()
   local track = ourTrack()
   if not track then return end
   if current.title == "" then return end
-  local okT, title = pcall(function() return track.Title:ToString() end)
-  if okT and title ~= current.title then
-    pcall(function() track.Title = FText(current.title) end)
-    pcall(function() track.Artist = FText(current.artist) end)
-  end
-  -- the radio widget, if it's on screen and showing our station
+  -- The game redraws the radio text from the track's Title, so put the full text there;
+  -- otherwise the game and this mod take turns and the text flashes.
   local text = displayText()
+  local okT, title = pcall(function() return track.Title:ToString() end)
+  if okT and title ~= text then
+    pcall(function() track.Title = FText(text) end)
+    pcall(function() track.Artist = FText("") end)
+  end
+  -- the radio widget, if it's on screen and still showing the old station name
   for _, w in ipairs(FindAllOf("UMG_HighlightRadioWidget_C") or {}) do
     if w:IsValid() then
       local tb = w.CurrentTrackText
       if tb and tb:IsValid() then
         local ok, shown = pcall(function() return tb:GetText():ToString() end)
-        if ok and shown ~= text and (shown == "MediaBridge" or shown == current.title or shown:find(" %- ")) then
+        if ok and shown ~= text and shown:find("^MediaBridge") then
           pcall(function() tb:SetText(FText(text)) end)
         end
       end

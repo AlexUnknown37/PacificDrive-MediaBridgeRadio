@@ -2,11 +2,15 @@
 -- * Radio channel up/down -> MediaBridge next/previous (real music app)
 -- * Shows the real song title + artist instead of "MediaBridge"
 -- Talks to MediaBridge without sockets:
---   commands -> \.\pipe\MediaBridge      song info <- %LOCALAPPDATA%\MediaBridge\nowplaying.txt
+--   Windows:            commands -> \\.\pipe\MediaBridge          song info <- %LOCALAPPDATA%\MediaBridge\nowplaying.txt
+--   Linux / Steam Deck: commands -> Z:\tmp\MediaBridge\commands.txt  song info <- Z:\tmp\MediaBridge\nowplaying.txt
+--   (the game runs under Proton, MediaBridge runs natively; Z: is the Linux root)
 
 local TAG = "[MediaBridgeRadio] "
 local PIPE = [[\\.\pipe\MediaBridge]]
 local NOWPLAYING = (os.getenv("LOCALAPPDATA") or "") .. "/MediaBridge/nowplaying.txt"
+local LINUX_DIR = "Z:/tmp/MediaBridge"
+local LINUX_NOWPLAYING = LINUX_DIR .. "/nowplaying.txt"
 local DEBUG = false
 
 local function log(s) print(TAG .. s .. "\n") end
@@ -18,8 +22,8 @@ local function send(cmd, why)
   local now = os.clock()
   if now - lastSend < 0.35 then dbg("ignored duplicate " .. cmd .. " (" .. why .. ")"); return end
   lastSend = now
-  local f = io.open(PIPE, "w")
-  if not f then log("MediaBridge is not running (could not open pipe)"); return end
+  local f = io.open(PIPE, "w") or io.open(LINUX_DIR .. "/commands.txt", "a")
+  if not f then log("MediaBridge is not running"); return end
   f:write(cmd .. "\n"); f:close()
   dbg("sent " .. cmd .. " (" .. why .. ")")
 end
@@ -86,6 +90,7 @@ end
 local current = { title = "", artist = "", seq = "" }
 local function readNowPlaying()
   local f, err = io.open(NOWPLAYING, "r")
+  if not f then f = io.open(LINUX_NOWPLAYING, "r") end
   if not f then
     current.fails = (current.fails or 0) + 1
     if current.fails % 20 == 1 then log("can't read song file (" .. current.fails .. "x): " .. tostring(err)) end
@@ -151,4 +156,4 @@ LoopAsync(250, function()
   return false
 end)
 
-log("loaded, song info from " .. NOWPLAYING)
+log("loaded")

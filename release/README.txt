@@ -1,4 +1,4 @@
-MediaBridge Radio for Pacific Drive  -  version 1.0.0
+MediaBridge Radio for Pacific Drive  -  version 1.1.0
 ====================================================
 
 Play your own music (Spotify, browser, etc.) on the car radio.
@@ -25,6 +25,18 @@ INSTALL
 6. In game: Settings > Audio > Radio Music Source = "Custom" or "Default and Custom",
    then press "Rebuild database".
 7. Get in the car and tune to the MediaBridge station.
+
+STEAM DECK / LINUX
+------------------
+Same steps, with these differences:
+- Run the Linux version of MediaBridge (in Desktop Mode).
+- In Steam: Pacific Drive > Properties > Launch Options:
+  WINEDLLOVERRIDES="dwmapi=n,b" %command%
+  (needed for UE4SS to load under Proton)
+- The game folder is ~/.steam/steam/steamapps/common/Pacific Drive/
+- Step 4: copy MediaBridge.m3u8 into the game's Proton folder:
+  ~/.steam/steam/steamapps/compatdata/1458140/pfx/drive_c/users/steamuser/AppData/Local/PenDriverPro/Custom/Radio/
+The mod finds MediaBridge on its own (it checks /tmp/MediaBridge).
 
 UNINSTALL
 ---------

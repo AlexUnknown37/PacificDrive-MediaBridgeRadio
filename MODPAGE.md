@@ -3,7 +3,7 @@
 ## Basic fields
 
 - **Mod name:** MediaBridge Radio - Your Music on the Car Radio
-- **Version:** 1.0.0
+- **Version:** 1.1.0
 - **Category:** Audio (or Miscellaneous if Audio isn't listed)
 - **Author:** AlexUnknown37
 - **Language:** English
@@ -33,6 +33,8 @@ It uses the game's built-in custom radio and the free MediaBridge tool. The mod 
 6. In game: Settings → Audio → Radio Music Source → **Custom** or **Default and Custom**, then press **Rebuild database**.
 7. Get in the car and tune to the MediaBridge station.
 
+**Steam Deck / Linux:** same steps, but run the Linux version of MediaBridge, add the launch option `WINEDLLOVERRIDES="dwmapi=n,b" %command%` (so UE4SS loads under Proton), and copy the playlist into `~/.steam/steam/steamapps/compatdata/1458140/pfx/drive_c/users/steamuser/AppData/Local/PenDriverPro/Custom/Radio/`.
+
 **Uninstall:** delete the `MediaBridgeRadio` folder and `MediaBridge.m3u8`.
 
 ## Main features
@@ -45,7 +47,7 @@ It uses the game's built-in custom radio and the free MediaBridge tool. The mod 
 
 **Known limits**
 - The music is about 3 seconds behind your music app (the game's stream buffer), so skips take a moment to be heard.
-- Single-player only, Windows only.
+- Single-player only. Windows, Linux and Steam Deck (Proton).
 
 ## Requirements
 
@@ -73,9 +75,9 @@ It uses the game's built-in custom radio and the free MediaBridge tool. The mod 
 ## Files tab
 
 - **File name:** MediaBridge Radio
-- **File version:** 1.0.0
+- **File version:** 1.1.0
 - **File category:** Main file
-- **Upload:** `MediaBridgeRadio-1.0.0.zip`
+- **Upload:** `MediaBridgeRadio-1.1.0.zip`
 - **File description:** The mod folder, the ready-made radio playlist and a readme with install steps.
 
 ## Permissions and credits
@@ -97,5 +99,7 @@ Nexus needs at least one image. Good ones:
 A 20–30 second video of a skip with the name changing would help most.
 
 ## Changelog
+
+**1.1.0**: Steam Deck / Linux support (with the Linux version of MediaBridge).
 
 **1.0.0**: First release.

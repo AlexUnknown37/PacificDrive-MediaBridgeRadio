@@ -1,4 +1,4 @@
-MediaBridge Radio for Pacific Drive  -  version 1.1.1
+MediaBridge Radio for Pacific Drive  -  version 1.1.2
 ====================================================
 
 Play your own music (Spotify, browser, etc.) on the car radio.
@@ -46,5 +46,6 @@ NOTES
 -----
 - The music is about 3 seconds behind your music app. That's the game's stream buffer.
 - The buttons only control your music while you're tuned to the MediaBridge station.
+- On-foot channel keybinds only work while you're looking at the radio.
 - Tip: send your music app's sound to a virtual cable (e.g. VB-Cable) and pick it in
   MediaBridge's tray menu, so you only hear the music from the car.

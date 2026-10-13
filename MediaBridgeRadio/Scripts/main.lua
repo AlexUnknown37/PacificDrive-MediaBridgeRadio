@@ -52,6 +52,17 @@ local function ourTrack()
   end
 end
 
+-- The on-foot controller receives the radio channel actions even when the player is
+-- looking elsewhere. Its HighlightIsRadio function is the game's own focus check for
+-- the radio interaction widget, so only take over those keybinds while it is true.
+local function isLookingAtRadio()
+  for _, controller in ipairs(FindAllOf("BP_PlayerController_MainCharacter_C") or {}) do
+    local ok, focused = pcall(function() return controller:HighlightIsRadio() end)
+    if ok and focused == true then return true end
+  end
+  return false
+end
+
 -- ---------- hooks ----------
 local hooks = {
   -- keybinds while driving
@@ -60,10 +71,10 @@ local hooks = {
   { "/Game/Systems/Controller/BP_Controller_PlayerCar.BP_Controller_PlayerCar_C", "InpActEvt_Radio_ChannelDown_K2Node_InputActionEvent_9", "previous" },
   { "/Game/Systems/Controller/BP_Controller_PlayerCar.BP_Controller_PlayerCar_C", "InpActEvt_Radio_ChannelDown_K2Node_InputActionEvent_10", "previous" },
   -- keybinds on foot
-  { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelUp_K2Node_InputActionEvent_2", "next" },
-  { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelUp_K2Node_InputActionEvent_3", "next" },
-  { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelDown_K2Node_InputActionEvent_0", "previous" },
-  { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelDown_K2Node_InputActionEvent_1", "previous" },
+  { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelUp_K2Node_InputActionEvent_2", "next", false, true },
+  { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelUp_K2Node_InputActionEvent_3", "next", false, true },
+  { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelDown_K2Node_InputActionEvent_0", "previous", false, true },
+  { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelDown_K2Node_InputActionEvent_1", "previous", false, true },
   -- clicking the radio's on-screen buttons
   { "/Game/UI/Inventory/ItemWidgets/HighlightWidget/UMG_HighlightRadioWidget.UMG_HighlightRadioWidget_C", "OnChannelUp_Click", "next" },
   { "/Game/UI/Inventory/ItemWidgets/HighlightWidget/UMG_HighlightRadioWidget.UMG_HighlightRadioWidget_C", "OnChannelDown_Click", "previous" },
@@ -79,6 +90,7 @@ local function tryRegister()
       local fn = StaticFindObject(h[1] .. ":" .. h[2])
       if fn and fn:IsValid() then
         local ok = pcall(RegisterHook, h[1] .. ":" .. h[2], function()
+          if h[5] and not isLookingAtRadio() then return end
           if not ourTrack() then return end
           if h[4] then
             -- fallback hook fires after the specific ones; only send if nothing was sent just now

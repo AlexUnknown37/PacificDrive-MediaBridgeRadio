@@ -27,14 +27,127 @@ local function seconds() return clock end
 -- One button press fires several hooks, sometimes in two bursts up to ~0.7 s apart; send only once.
 local DEBOUNCE = 0.9
 local lastSend = -10
-local function send(cmd, why)
+local function send(cmd, why, force)
   local now = seconds()
-  if now - lastSend < DEBOUNCE then dbg("ignored duplicate " .. cmd .. " (" .. why .. ")"); return end
+  if not force and now - lastSend < DEBOUNCE then dbg("ignored duplicate " .. cmd .. " (" .. why .. ")"); return end
   lastSend = now
   local f = io.open(PIPE, "w") or io.open(LINUX_DIR .. "/commands.txt", "a")
   if not f then log("MediaBridge is not running"); return end
   f:write(cmd .. "\n"); f:close()
   dbg("sent " .. cmd .. " (" .. why .. ")")
+end
+
+-- Get the active game world so we can follow the pause menu state independently
+-- of the game's paused world tick.
+local pauseQuery = StaticFindObject("/Script/Engine.Default__GameplayStatics")
+local function gameIsPaused()
+  local controllers = FindAllOf("PlayerController") or FindAllOf("Controller") or {}
+  for _, controller in ipairs(controllers) do
+    local okWorld, world = pcall(function() return controller:GetWorld() end)
+    if okWorld and world and world:IsValid() then
+      if pauseQuery and pauseQuery:IsValid() then
+        local ok, paused = pcall(function() return pauseQuery:IsGamePaused(world) end)
+        if ok and type(paused) == "boolean" then return paused end
+      end
+      local ok, paused = pcall(function() return world:IsPaused() end)
+      if ok and type(paused) == "boolean" then return paused end
+      ok, paused = pcall(function() return world.bIsPaused end)
+      if ok and type(paused) == "boolean" then return paused end
+    end
+  end
+end
+
+local lastGamePaused
+local closedBridgePlayers = {}
+local pendingBridgeOpen = {}
+local pendingBridgePlay = {}
+
+-- Closing the radio's live MediaPlayer discards audio already buffered by the game.
+local function closeBridgeStream()
+  closedBridgePlayers = {}
+  for _, player in ipairs(FindAllOf("MediaPlayer") or {}) do
+    local ok, url = pcall(function() return player:GetUrl():ToString() end)
+    if ok and url and url:find("MediaBridge", 1, true) then
+      local closed = pcall(function() player:Close() end)
+      if closed then
+        table.insert(closedBridgePlayers, { player = player, url = url })
+      end
+    end
+  end
+  if #closedBridgePlayers > 0 then
+    log("closed " .. #closedBridgePlayers .. " MediaBridge stream player(s) to clear buffered audio")
+  else
+    log("could not find an open MediaBridge stream player to clear")
+  end
+end
+
+-- Reconnect slightly after unpausing so the game's asynchronous Close has time to finish.
+local function reopenBridgeStream()
+  pendingBridgeOpen = {}
+  for _, entry in ipairs(closedBridgePlayers) do
+    table.insert(pendingBridgeOpen, {
+      player = entry.player,
+      url = entry.url,
+      openAt = seconds() + 0.5,
+      deadline = seconds() + 8,
+    })
+  end
+  closedBridgePlayers = {}
+end
+
+local function serviceBridgeReconnect()
+  local now = seconds()
+  for i = #pendingBridgeOpen, 1, -1 do
+    local entry = pendingBridgeOpen[i]
+    if now >= entry.openAt then
+      local ok, opened = pcall(function() return entry.player:OpenUrl(entry.url) end)
+      if ok and opened ~= false then
+        table.insert(pendingBridgePlay, { player = entry.player, deadline = entry.deadline })
+        table.remove(pendingBridgeOpen, i)
+      elseif now >= entry.deadline then
+        log("could not reopen the MediaBridge stream")
+        table.remove(pendingBridgeOpen, i)
+      else
+        entry.openAt = now + 0.5
+      end
+    end
+  end
+
+  for i = #pendingBridgePlay, 1, -1 do
+    local entry = pendingBridgePlay[i]
+    local ok, playing = pcall(function() return entry.player:IsPlaying() end)
+    if ok and playing == true then
+      table.remove(pendingBridgePlay, i)
+    elseif now >= entry.deadline then
+      log("MediaBridge stream reopened but did not start playing")
+      table.remove(pendingBridgePlay, i)
+    else
+      local playOk, started = pcall(function() return entry.player:Play() end)
+      if playOk and started == true then table.remove(pendingBridgePlay, i) end
+    end
+  end
+end
+
+local function syncMediaBridgePause()
+  local paused = gameIsPaused()
+  if paused == nil then return end
+  if lastGamePaused == nil then
+    lastGamePaused = paused
+    if paused then
+      send("pause", "game already paused", true)
+      closeBridgeStream()
+    end
+    return
+  end
+  if paused == lastGamePaused then return end
+  lastGamePaused = paused
+  if paused then
+    send("pause", "game paused", true)
+    closeBridgeStream()
+  else
+    send("play", "game resumed", true)
+    reopenBridgeStream()
+  end
 end
 
 -- Is the radio on our station? (only take over the buttons then)
@@ -176,6 +289,8 @@ LoopAsync(250, function()
   ExecuteInGameThread(function()
     local ok, err = pcall(function()
       if tick % 8 == 1 then tryRegister() end
+      syncMediaBridgePause()
+      serviceBridgeReconnect()
       readNowPlaying()
       applyDisplay()
     end)

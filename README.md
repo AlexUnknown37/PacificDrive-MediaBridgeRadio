@@ -9,6 +9,7 @@ Play your own music (Spotify, browser, any music app) on the Pacific Drive car r
 - **Skip with the radio:** channel up/down plays the next or previous song in your music app (keybinds and the on-screen radio buttons)
 - On-foot radio keybinds only work while you're looking at the radio
 - **Now playing:** the radio screen shows "Song Title - Artist"
+- Pausing the game pauses MediaBridge and closes its radio stream to clear buffered audio; resuming reconnects the stream and plays again
 - Works on **Windows** and **Steam Deck / Linux** (Proton)
 - Only takes over the buttons while you're tuned to the MediaBridge station
 

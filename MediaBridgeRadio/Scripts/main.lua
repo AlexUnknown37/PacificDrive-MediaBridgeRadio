@@ -29,12 +29,13 @@ local DEBOUNCE = 0.9
 local lastSend = -10
 local function send(cmd, why, force)
   local now = seconds()
-  if not force and now - lastSend < DEBOUNCE then dbg("ignored duplicate " .. cmd .. " (" .. why .. ")"); return end
+  if not force and now - lastSend < DEBOUNCE then dbg("ignored duplicate " .. cmd .. " (" .. why .. ")"); return false end
   lastSend = now
   local f = io.open(PIPE, "w") or io.open(LINUX_DIR .. "/commands.txt", "a")
-  if not f then log("MediaBridge is not running"); return end
+  if not f then log("MediaBridge is not running"); return false end
   f:write(cmd .. "\n"); f:close()
   dbg("sent " .. cmd .. " (" .. why .. ")")
+  return true
 end
 
 -- Get the active game world so we can follow the pause menu state independently
@@ -58,75 +59,6 @@ local function gameIsPaused()
 end
 
 local lastGamePaused
-local closedBridgePlayers = {}
-local pendingBridgeOpen = {}
-local pendingBridgePlay = {}
-
--- Closing the radio's live MediaPlayer discards audio already buffered by the game.
-local function closeBridgeStream()
-  closedBridgePlayers = {}
-  for _, player in ipairs(FindAllOf("MediaPlayer") or {}) do
-    local ok, url = pcall(function() return player:GetUrl():ToString() end)
-    if ok and url and url:find("MediaBridge", 1, true) then
-      local closed = pcall(function() player:Close() end)
-      if closed then
-        table.insert(closedBridgePlayers, { player = player, url = url })
-      end
-    end
-  end
-  if #closedBridgePlayers > 0 then
-    log("closed " .. #closedBridgePlayers .. " MediaBridge stream player(s) to clear buffered audio")
-  else
-    log("could not find an open MediaBridge stream player to clear")
-  end
-end
-
--- Reconnect slightly after unpausing so the game's asynchronous Close has time to finish.
-local function reopenBridgeStream()
-  pendingBridgeOpen = {}
-  for _, entry in ipairs(closedBridgePlayers) do
-    table.insert(pendingBridgeOpen, {
-      player = entry.player,
-      url = entry.url,
-      openAt = seconds() + 0.5,
-      deadline = seconds() + 8,
-    })
-  end
-  closedBridgePlayers = {}
-end
-
-local function serviceBridgeReconnect()
-  local now = seconds()
-  for i = #pendingBridgeOpen, 1, -1 do
-    local entry = pendingBridgeOpen[i]
-    if now >= entry.openAt then
-      local ok, opened = pcall(function() return entry.player:OpenUrl(entry.url) end)
-      if ok and opened ~= false then
-        table.insert(pendingBridgePlay, { player = entry.player, deadline = entry.deadline })
-        table.remove(pendingBridgeOpen, i)
-      elseif now >= entry.deadline then
-        log("could not reopen the MediaBridge stream")
-        table.remove(pendingBridgeOpen, i)
-      else
-        entry.openAt = now + 0.5
-      end
-    end
-  end
-
-  for i = #pendingBridgePlay, 1, -1 do
-    local entry = pendingBridgePlay[i]
-    local ok, playing = pcall(function() return entry.player:IsPlaying() end)
-    if ok and playing == true then
-      table.remove(pendingBridgePlay, i)
-    elseif now >= entry.deadline then
-      log("MediaBridge stream reopened but did not start playing")
-      table.remove(pendingBridgePlay, i)
-    else
-      local playOk, started = pcall(function() return entry.player:Play() end)
-      if playOk and started == true then table.remove(pendingBridgePlay, i) end
-    end
-  end
-end
 
 local function syncMediaBridgePause()
   local paused = gameIsPaused()
@@ -135,7 +67,6 @@ local function syncMediaBridgePause()
     lastGamePaused = paused
     if paused then
       send("pause", "game already paused", true)
-      closeBridgeStream()
     end
     return
   end
@@ -143,10 +74,8 @@ local function syncMediaBridgePause()
   lastGamePaused = paused
   if paused then
     send("pause", "game paused", true)
-    closeBridgeStream()
   else
     send("play", "game resumed", true)
-    reopenBridgeStream()
   end
 end
 
@@ -290,7 +219,6 @@ LoopAsync(250, function()
     local ok, err = pcall(function()
       if tick % 8 == 1 then tryRegister() end
       syncMediaBridgePause()
-      serviceBridgeReconnect()
       readNowPlaying()
       applyDisplay()
     end)

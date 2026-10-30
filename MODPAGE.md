@@ -3,7 +3,7 @@
 ## Basic fields
 
 - **Mod name:** MediaBridge Radio - Your Music on the Car Radio
-- **Version:** 1.1.2
+- **Version:** 1.1.4
 - **Category:** Audio (or Miscellaneous if Audio isn't listed)
 - **Author:** AlexUnknown37
 - **Language:** English
@@ -43,6 +43,7 @@ It uses the game's built-in custom radio and the free MediaBridge tool. The mod 
 - **Skip with the radio**: channel up/down plays the next or previous song in your music app. Works with keybinds and the on-screen radio buttons.
 - On-foot channel keybinds only work while you're looking at the radio.
 - **Now playing**: the radio screen shows "Song Title - Artist".
+- **Plays and pauses with the radio**: your music plays while the car radio or garage jukebox is on, and pauses when both are off, on another station, or when you pause the game.
 - Works with any music app that shows up in Windows' media controls (Spotify, browsers, etc.). Tested with Spotify.
 - Only takes over the buttons while you're tuned to the MediaBridge station. The normal stations work as usual.
 
@@ -76,9 +77,9 @@ It uses the game's built-in custom radio and the free MediaBridge tool. The mod 
 ## Files tab
 
 - **File name:** MediaBridge Radio
-- **File version:** 1.1.2
+- **File version:** 1.1.4
 - **File category:** Main file
-- **Upload:** `MediaBridgeRadio-1.1.2.zip`
+- **Upload:** `MediaBridgeRadio-1.1.4.zip`
 - **File description:** The mod folder, the ready-made radio playlist and a readme with install steps.
 
 ## Permissions and credits
@@ -100,6 +101,12 @@ Nexus needs at least one image. Good ones:
 A 20–30 second video of a skip with the name changing would help most.
 
 ## Changelog
+
+**1.1.4**: Your music now plays and pauses with the radio. It plays while the car radio or the garage jukebox is on and tuned to MediaBridge, and pauses when both are off, when you tune to another station, or when you pause the game. Turning off one while the other is still on keeps the music going. Tested on Windows and Steam Deck (Proton 11.0-2 and Experimental).
+
+**1.1.3**: Pausing no longer closes and reopens the radio stream.
+
+**1.1.2**: Pausing the game pauses your music; unpausing plays it again.
 
 **1.1.1**: The radio now updates the song name when the song changes in your music app (not only when you skip with the radio). Fixed UE4SS hanging on Ctrl+R mod reload.
 

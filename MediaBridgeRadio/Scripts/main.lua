@@ -58,27 +58,6 @@ local function gameIsPaused()
   end
 end
 
-local lastGamePaused
-
-local function syncMediaBridgePause()
-  local paused = gameIsPaused()
-  if paused == nil then return end
-  if lastGamePaused == nil then
-    lastGamePaused = paused
-    if paused then
-      send("pause", "game already paused", true)
-    end
-    return
-  end
-  if paused == lastGamePaused then return end
-  lastGamePaused = paused
-  if paused then
-    send("pause", "game paused", true)
-  else
-    send("play", "game resumed", true)
-  end
-end
-
 -- Is the radio on our station? (only take over the buttons then)
 local cachedTrack
 local function ourTrack()
@@ -92,6 +71,34 @@ local function ourTrack()
       if ok and url and url:find("MediaBridge", 1, true) then cachedTrack = t; return t end
     end
   end
+end
+
+-- One music manager drives both the car radio (radioOn) and the garage jukebox (GarageStereoOn).
+-- Our music should play only when the game isn't paused, at least one of them is on, and the
+-- station is MediaBridge. Returns nil when we can't tell yet.
+local function musicShouldPlay()
+  local paused = gameIsPaused()
+  if paused == nil then return nil end
+  if paused then return false end
+  local mm = FindFirstOf("BP_MusicManager_C")
+  if not mm or not mm:IsValid() then return nil end
+  local okOn, on = pcall(function() return mm.radioOn == true or mm.GarageStereoOn == true end)
+  if not okOn then return nil end
+  if not on then return false end
+  local mine = ourTrack()
+  local okT, cur = pcall(function() return mm:CurrentRadioTrack():GetFullName() end)
+  return mine ~= nil and okT and cur == mine:GetFullName()
+end
+
+local lastShouldPlay
+
+local function syncMediaBridgePlayback()
+  local should = musicShouldPlay()
+  if should == nil then return end
+  -- Only act on changes; at startup just remember the state so we don't pause music the player started.
+  if lastShouldPlay == nil or should == lastShouldPlay then lastShouldPlay = should; return end
+  lastShouldPlay = should
+  send(should and "play" or "pause", should and "radio on / game resumed" or "radio off / game paused", true)
 end
 
 -- The on-foot controller receives the radio channel actions even when the player is
@@ -218,7 +225,7 @@ LoopAsync(250, function()
   ExecuteInGameThread(function()
     local ok, err = pcall(function()
       if tick % 8 == 1 then tryRegister() end
-      syncMediaBridgePause()
+      syncMediaBridgePlayback()
       readNowPlaying()
       applyDisplay()
     end)

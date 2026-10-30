@@ -1,0 +1,120 @@
+Listen to your own music in the car! Whatever you're playing in Spotify, YouTube or any other music app comes out of the Pacific Drive car radio, with the game's 3D sound and radio effect.
+
+[list]
+[*]The radio's [b]channel buttons skip songs[/b] (D-pad left/right, next / previous)
+[*]The radio screen shows the [b]song name and artist[/b]
+[*]Your music [b]plays when the radio is on and pauses when it's off[/b] (car radio and garage jukebox), and pauses when you pause the game
+[*]The normal in-game stations still work as usual
+[/list]
+Works on [b]Windows[/b] and [b]Steam Deck / Linux[/b]. It doesn't change any game files.
+
+[line]
+
+[size=5][b]What you need[/b][/size]
+
+[list]
+[*][b]Pacific Drive[/b] (v1.7.1 or newer)
+[*][b]UE4SS[/b], the mod loader: [url=https://github.com/UE4SS-RE/RE-UE4SS/releases/tag/experimental-latest]UE4SS experimental[/url]
+[*][b]MediaBridge[/b], a small free app that hands your music to the game: [url=https://github.com/AlexUnknown37/MediaBridge/releases]MediaBridge releases[/url]
+[/list]
+
+[size=5][b]Install the mod[/b][/size]
+
+[b]1. Install UE4SS[/b] (skip if you already have it)
+Download the UE4SS zip (not the one starting with [font=Courier New]zDEV-[/font]). Unzip it into:
+[font=Courier New]Pacific Drive\PenDriverPro\Binaries\Win64\[/font]
+You should now have [font=Courier New]dwmapi.dll[/font] and a [font=Courier New]ue4ss[/font] folder next to [font=Courier New]PenDriverPro-Win64-Shipping.exe[/font].
+
+[b]2. Add this mod[/b]
+Copy the [font=Courier New]MediaBridgeRadio[/font] folder from this download into:
+[font=Courier New]...\Win64\ue4ss\Mods\[/font]
+Then open [font=Courier New]ue4ss\Mods\mods.txt[/font] in Notepad and add this line just above [font=Courier New]Keybinds : 1[/font]
+[code]MediaBridgeRadio : 1[/code]
+[b]3. Add the radio station[/b]
+Copy [font=Courier New]MediaBridge.m3u8[/font] (in the [font=Courier New]Custom Radio playlist[/font] folder of this download) into:
+[font=Courier New]%LOCALAPPDATA%\PenDriverPro\Custom\Radio\[/font]
+Tip: paste that path into the File Explorer address bar. If the [font=Courier New]Custom[/font] or [font=Courier New]Radio[/font] folder doesn't exist, create it.
+
+[b]4. Turn on custom radio in the game[/b]
+Settings → Audio → [b]Radio Music Source[/b] → [b]Custom[/b] (or [b]Default and Custom[/b]), then press [b]Rebuild database[/b]. You only need to do this once.
+
+[b]5. Play![/b]
+Start MediaBridge (see below), play some music, then get in the car, turn on the radio and tune to the [b]MediaBridge[/b] station.
+
+[b]Steam Deck / Linux:[/b] the same steps with three changes:
+[list]
+[*]In Steam: Pacific Drive → Properties → [b]Launch Options[/b] (this lets UE4SS load):
+[code]WINEDLLOVERRIDES="dwmapi=n,b" %command%[/code]
+[*]The game folder is [font=Courier New]~/.steam/steam/steamapps/common/Pacific Drive/[/font]
+[*]Put [font=Courier New]MediaBridge.m3u8[/font] in [font=Courier New]~/.steam/steam/steamapps/compatdata/1458140/pfx/drive_c/users/steamuser/AppData/Local/PenDriverPro/Custom/Radio/[/font]
+[/list]
+[b]Uninstall:[/b] delete the [font=Courier New]MediaBridgeRadio[/font] folder and [font=Courier New]MediaBridge.m3u8[/font].
+
+[line]
+
+[size=5][b]Set up MediaBridge and your music[/b][/size]
+
+[size=4][b]Windows[/b][/size]
+
+[b]1. Run MediaBridge[/b]
+Download [font=Courier New]MediaBridge.exe[/font] and double-click it. A green music note appears in the tray (bottom-right, maybe under the [font=Courier New]^[/font] arrow). Click it and turn on [b]Start with Windows[/b] if you don't want to start it every time.
+
+[b]2. Play your music[/b] in Spotify, a web browser (YouTube, SoundCloud…) or any app that shows up in Windows' media controls. That's enough to hear it in the car.
+
+[b]3. Recommended: so you only hear the music from the car[/b]
+Without this you'll hear the music twice: once from your speakers and once from the car radio.
+[list]
+[*]Install [b]VB-Cable[/b] (free): [url=https://vb-audio.com/Cable/]vb-audio.com/Cable[/url]
+[*]Send your music app to [b]CABLE Input[/b]:
+[list]
+[*][b]Spotify:[/b] Settings → Playback → Output device → [b]CABLE Input[/b]
+[*][b]Web browser or any other app:[/b] Windows Settings → System → Sound → [b]Volume mixer[/b] (or [i]App volume and device preferences[/i]) → set your browser's Output to [b]CABLE Input[/b]. The browser must be playing something to show up in the list.
+[/list]
+[*]In MediaBridge's tray menu, under [b]Listen to[/b], pick [b]CABLE Input[/b] (it usually picks it by itself).
+[/list]
+Now game sounds, Discord and everything else stay on your speakers, and your music only plays from the car.
+
+[size=4][b]Steam Deck / Linux[/b][/size]
+
+No VB-Cable needed: MediaBridge makes its own virtual speaker.
+
+[list=1]
+[*]In [b]Desktop Mode[/b], put the Linux [font=Courier New]MediaBridge[/font] program in a folder that stays, e.g. [font=Courier New]~/Applications/MediaBridge/[/font]
+[*]Open Konsole in that folder and run the line below. It now starts by itself every time, in Desktop Mode and Game Mode.
+[code]chmod +x MediaBridge && ./MediaBridge --install[/code]
+[*]Open [font=Courier New]http://127.0.0.1:48902/[/font] in a browser. Under [b]Send these apps here automatically[/b], tick the box and type your app's name, e.g. [font=Courier New]spotify[/font], or [font=Courier New]firefox[/font] / [font=Courier New]chrome[/font] for a web browser (YouTube Music etc.). For more than one, separate them with commas: [font=Courier New]spotify, firefox[/font]
+[*]Play your music, then switch to Game Mode and play.
+[/list]
+
+[line]
+
+[size=5][b]Good to know[/b][/size]
+
+[list]
+[*]The music is about [b]3 seconds behind[/b] your music app (that's the game's radio buffer), so a skip takes a moment to be heard.
+[*]The channel buttons only skip songs while you're tuned to the MediaBridge station, and the keybinds only while you're looking at the radio, just like the normal stations.
+[*]Single-player only.
+[/list]
+[b]Not working?[/b]
+[list]
+[*]No MediaBridge station: check step 3 and press [b]Rebuild database[/b] again.
+[*]Station is silent: make sure MediaBridge is running and your music is playing.
+[*]Song name says "MediaBridge": check the [font=Courier New]MediaBridgeRadio : 1[/font] line in [font=Courier New]mods.txt[/font] (step 2).
+[/list]
+
+[size=5][b]Shout outs[/b][/size]
+
+[list]
+[*]Ironwood Studios, for Pacific Drive and for building custom radio support into the game
+[*]The RE-UE4SS team, for the mod loader that makes this possible
+[*]Made with help from Claude (Anthropic's AI assistant)
+[/list]
+
+[size=5][b]Support[/b][/size]
+
+If you enjoy this mod, you can support me here:
+[list]
+[*]Ko-fi: [url=https://ko-fi.com/alexjustalex]ko-fi.com/alexjustalex[/url]
+[*]Patreon: [url=https://patreon.com/AlexanderVazquez]patreon.com/AlexanderVazquez[/url]
+[*]GitHub: [url=https://github.com/AlexUnknown37]github.com/AlexUnknown37[/url]
+[/list]

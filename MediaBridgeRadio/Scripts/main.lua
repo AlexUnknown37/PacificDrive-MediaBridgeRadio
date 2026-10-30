@@ -40,11 +40,17 @@ end
 
 -- Get the active game world so we can follow the pause menu state independently
 -- of the game's paused world tick.
+-- Class templates (Default__ objects) aren't in a world; calling functions on them crashed UE4SS under Proton.
+local function isLive(o)
+  return o and o:IsValid() and not o:GetFullName():find("Default__", 1, true)
+end
+
 local pauseQuery = StaticFindObject("/Script/Engine.Default__GameplayStatics")
 local function gameIsPaused()
   local controllers = FindAllOf("PlayerController") or FindAllOf("Controller") or {}
   for _, controller in ipairs(controllers) do
-    local okWorld, world = pcall(function() return controller:GetWorld() end)
+    local okWorld, world = false, nil
+    if isLive(controller) then okWorld, world = pcall(function() return controller:GetWorld() end) end
     if okWorld and world and world:IsValid() then
       if pauseQuery and pauseQuery:IsValid() then
         local ok, paused = pcall(function() return pauseQuery:IsGamePaused(world) end)
@@ -76,18 +82,29 @@ end
 -- One music manager drives both the car radio (radioOn) and the garage jukebox (GarageStereoOn).
 -- Our music should play only when the game isn't paused, at least one of them is on, and the
 -- station is MediaBridge. Returns nil when we can't tell yet.
+local mmAddr, mmSince = nil, 0
 local function musicShouldPlay()
+  -- Wait for the real music manager: before it exists the game is still loading.
+  local mm
+  for _, m in ipairs(FindAllOf("BP_MusicManager_C") or {}) do
+    if isLive(m) then mm = m; break end
+  end
+  if not mm then return nil end
+  -- A new manager means a world is loading; let it settle before calling into it (crashed on save load).
+  local addr = mm:GetAddress()
+  if addr ~= mmAddr then mmAddr, mmSince = addr, clock end
+  if clock - mmSince < 3 then return nil end
   local paused = gameIsPaused()
   if paused == nil then return nil end
   if paused then return false end
-  local mm = FindFirstOf("BP_MusicManager_C")
-  if not mm or not mm:IsValid() then return nil end
   local okOn, on = pcall(function() return mm.radioOn == true or mm.GarageStereoOn == true end)
   if not okOn then return nil end
   if not on then return false end
   local mine = ourTrack()
-  local okT, cur = pcall(function() return mm:CurrentRadioTrack():GetFullName() end)
-  return mine ~= nil and okT and cur == mine:GetFullName()
+  if not mine then return false end
+  local okT, cur = pcall(function() return mm:CurrentRadioTrack() end)
+  if not okT or not cur or not cur:IsValid() then return false end
+  return cur:GetAddress() == mine:GetAddress()
 end
 
 local lastShouldPlay
@@ -113,12 +130,9 @@ local function isLookingAtRadio()
 end
 
 -- ---------- hooks ----------
+-- No car keybind hooks: in the car the game checks IsLookingAtRadio itself and then calls
+-- OnChannelUp/Down_Click, so hooking the keybinds skipped songs while looking at the road.
 local hooks = {
-  -- keybinds while driving
-  { "/Game/Systems/Controller/BP_Controller_PlayerCar.BP_Controller_PlayerCar_C", "InpActEvt_Radio_ChannelUp_K2Node_InputActionEvent_11", "next" },
-  { "/Game/Systems/Controller/BP_Controller_PlayerCar.BP_Controller_PlayerCar_C", "InpActEvt_Radio_ChannelUp_K2Node_InputActionEvent_12", "next" },
-  { "/Game/Systems/Controller/BP_Controller_PlayerCar.BP_Controller_PlayerCar_C", "InpActEvt_Radio_ChannelDown_K2Node_InputActionEvent_9", "previous" },
-  { "/Game/Systems/Controller/BP_Controller_PlayerCar.BP_Controller_PlayerCar_C", "InpActEvt_Radio_ChannelDown_K2Node_InputActionEvent_10", "previous" },
   -- keybinds on foot
   { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelUp_K2Node_InputActionEvent_2", "next", false, true },
   { "/Game/Systems/Controller/BP_PlayerController_MainCharacter.BP_PlayerController_MainCharacter_C", "InpActEvt_Radio_ChannelUp_K2Node_InputActionEvent_3", "next", false, true },

@@ -6,8 +6,7 @@ Over on [Nexus](https://www.nexusmods.com/pacificdrive/mods/208)
 
 Play your own music (Spotify, browser, any music app) on the Pacific Drive car radio, with the game's own 3D sound.
 
-- **Skip with the radio:** channel up/down plays the next or previous song in your music app (keybinds and the on-screen radio buttons)
-- On-foot radio keybinds only work while you're looking at the radio
+- **Skip with the radio:** the channel buttons (D-pad left/right, keyboard channel keys or the on-screen radio buttons) play the next or previous song in your music app, while you look at the radio like the normal stations
 - **Now playing:** the radio screen shows "Song Title - Artist"
 - **Plays and pauses with the radio:** your music plays while the car radio or garage jukebox is on and tuned to MediaBridge, and pauses when both are off, when you tune to another station, or when you pause the game
 - Works on **Windows** and **Steam Deck / Linux** (Proton)
@@ -28,7 +27,7 @@ Script bridge paths:
 - **Linux / Steam Deck:** commands appended to `Z:\tmp\MediaBridge\commands.txt`, song from `Z:\tmp\MediaBridge\nowplaying.txt` (Proton's `Z:` is the Linux root)
 
 Hooked functions:
-- `BP_Controller_PlayerCar_C` / `BP_PlayerController_MainCharacter_C`: `InpActEvt_Radio_ChannelUp/Down_*`
+- `BP_PlayerController_MainCharacter_C`: `InpActEvt_Radio_ChannelUp/Down_*` (on foot, only while `HighlightIsRadio()`). In the car the game checks `IsLookingAtRadio` itself before calling the widget click functions below, so the car keybinds are not hooked.
 - `UMG_HighlightRadioWidget_C`: `OnChannelUp_Click`, `OnChannelDown_Click`
 - `BP_RadioComponent_C`: `OnSkipTrack` (fallback)
 

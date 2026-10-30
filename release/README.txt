@@ -46,7 +46,7 @@ NOTES
 -----
 - The music is about 3 seconds behind your music app. That's the game's stream buffer.
 - The buttons only control your music while you're tuned to the MediaBridge station.
-- On-foot channel keybinds only work while you're looking at the radio.
+- The channel buttons (D-pad left/right) only skip songs while you're looking at the radio, like the normal stations.
 - Your music plays while the car radio or the garage jukebox is on and tuned to MediaBridge,
   and pauses when both are off, when you tune to another station, or when you pause the game.
 - Tip: send your music app's sound to a virtual cable (e.g. VB-Cable) and pick it in
